@@ -1,47 +1,102 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "クイックスタート"
+description: "デモデータを準備し、Streamlit UI から自然言語で最初の質問をします。"
+icon: "rocket"
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+このページでは、ローカルで catcafe を起動し、デモデータに質問します。
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+## 必要なもの
 
-## Prerequisites
+- Python 3.12 以上
+- [uv](https://docs.astral.sh/uv/)
+- Docker（Docker Compose を含む）
+- [LM Studio](https://lmstudio.ai/)
 
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+## セットアップ
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
-
+  <Step title="リポジトリを取得する">
     ```bash
-    npm install your-package
+    git clone https://github.com/neko32/catcafe.git
+    cd catcafe
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="依存パッケージをインストールする">
+    仮想環境を作成し、`seed` と `ui` の extra をインストールします。
 
+    <CodeGroup>
+    ```powershell PowerShell
+    uv venv .venv --python 3.12
+    .venv\Scripts\Activate.ps1
+    uv pip install -e ".[seed,ui]"
+    ```
+
+    ```bash bash
+    uv venv .venv --python 3.12
+    source .venv/bin/activate
+    uv pip install -e ".[seed,ui]"
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="デモデータを生成する">
     ```bash
-    your-cli init
+    python scripts/seed_demo_data.py
+    ```
+
+    `data/catcafe_demo.db` に SQLite のデータベースを作成します。
+  </Step>
+  <Step title="Fuseki を起動する">
+    ```bash
+    docker compose up -d fuseki
+    ```
+
+    Fuseki は `http://localhost:3030` で起動します。
+  </Step>
+  <Step title="データを RDF にしてロードする">
+    ```bash
+    python scripts/export_rdf.py --load
+    ```
+
+    `wrote ... triples` と `loaded ...` が表示されれば成功です。
+  </Step>
+  <Step title="LM Studio を準備する">
+    LM Studio にモデルをロードし、ローカルサーバーを起動します。既定の接続先は `http://localhost:1234/v1`、既定のモデル名は `google/gemma-4-e4b` です。
+
+    別のモデルを使うときは、次のステップの画面でモデル名を変更します。
+  </Step>
+  <Step title="Streamlit UI を起動する">
+    ```bash
+    streamlit run scripts/streamlit_app.py
     ```
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
-
-    ```bash
-    your-cli start
-    ```
+  <Step title="質問する">
+    入力欄に「猫別の予約数を多い順に教えて」と入力し、**検索** をクリックします。結果が表で表示されます。
   </Step>
 </Steps>
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  質問に失敗するときは、[トラブルシューティング](/guides/troubleshooting)を確認してください。
 </Tip>
+
+## 後片付け
+
+```bash
+docker compose down
+```
+
+Fuseki のデータは名前付きボリュームに残ります。
+
+## 次のステップ
+
+<Columns cols={3}>
+  <Card title="仕組みを知る" icon="wand-magic-sparkles" href="/concepts/nl-query">
+    質問が SPARQL になる流れです。
+  </Card>
+  <Card title="Claude から使う" icon="plug" href="/guides/mcp-claude-desktop">
+    MCP サーバーを登録します。
+  </Card>
+  <Card title="LLM を替える" icon="microchip" href="/guides/custom-llm">
+    別のモデルに差し替えます。
+  </Card>
+</Columns>

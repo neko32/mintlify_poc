@@ -5,3 +5,7 @@
 # Draft content
 drafts/
 *.draft.mdx
+
+# Instructions for coding agents, not reader-facing pages
+AGENTS.md
+CLAUDE.local.md

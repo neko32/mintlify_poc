@@ -1,0 +1,25 @@
+---
+title: "変更履歴"
+description: "catcafe の主な変更を新しい順に記載します。"
+icon: "clock-rotate-left"
+---
+
+<Update label="2026-09-19" description="トリプルストアへの移行" tags={["セマンティック層"]}>
+  ## RDF トリプルストアへの置き換え
+
+  SQLAlchemy Core で作っていた意味定義層を廃止し、Apache Jena Fuseki と SPARQL に置き換えました。
+
+  - `scripts/export_rdf.py` を追加しました。SQLite から Fuseki への一方向の投影を行います。
+  - 自然言語検索を、JSON 構造化クエリから SPARQL の直接生成に変更しました。
+  - `docker-compose.yml` と Fuseki の起動スクリプトを追加しました。
+  - Streamlit UI と MCP サーバーを新しい経路に対応させました。
+</Update>
+
+<Update label="2026-09-12" description="最初のチェックイン" tags={["基盤"]}>
+  ## 基盤の構築
+
+  - ドメインスキーマと永続化層を追加しました。
+  - SQLAlchemy Core による意味定義層と、自然言語検索を追加しました。
+  - Streamlit UI、MCP サーバー、デモデータの生成スクリプトを追加しました。
+  - GitHub Actions の CI を追加しました。
+</Update>

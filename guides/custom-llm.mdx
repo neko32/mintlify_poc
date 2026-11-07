@@ -1,0 +1,71 @@
+---
+title: "別の LLM を使う"
+description: "接続先を変更するか、LLMClient Protocol を実装して LLM を差し替えます。"
+icon: "microchip"
+---
+
+LLM を変える方法は 2 つあります。OpenAI 互換のエンドポイントなら接続先を変えるだけです。それ以外は `LLMClient` Protocol を実装します。
+
+## OpenAI 互換のエンドポイントを使う
+
+`OpenAICompatibleLLMClient` は、OpenAI 互換の Chat Completions エンドポイントと通信します。
+
+```python
+from catcafe.semantic.nl_query import OpenAICompatibleLLMClient
+
+llm_client = OpenAICompatibleLLMClient(
+    model="your-model-name",
+    base_url="http://localhost:1234/v1",
+    api_key="lm-studio",
+)
+```
+
+`api_key` の既定値は `"lm-studio"` です。LM Studio はこの値の内容を無視します。
+
+## Protocol を実装する
+
+`complete()` を持つクラスであれば、`LLMClient` として渡せます。
+
+```python
+class MyLLMClient:
+    def complete(self, *, system: str, user: str, json_schema: dict | None = None) -> str:
+        # あなたの LLM を呼び出し、SPARQL のテキストを返します
+        ...
+```
+
+## LLM と Docker なしで動かす
+
+固定の SPARQL を返すフェイクと `InMemoryFusekiClient` を組み合わせると、LM Studio も Fuseki も使わずに `NLQueryService` を実行できます。`data/catcafe_demo.ttl` は `python scripts/export_rdf.py` で生成します。
+
+```python try_nl_query.py
+from rdflib import Graph
+
+from catcafe.semantic.nl_query import NLQueryService
+from catcafe.semantic.rdf.fakes import InMemoryFusekiClient
+
+SPARQL = """
+PREFIX cc: <http://catcafe.example/onto#>
+SELECT ?status (COUNT(?r) AS ?c) WHERE {
+  ?r a cc:Reservation ; cc:status ?status .
+} GROUP BY ?status
+"""
+
+
+class FixedLLMClient:
+    def complete(self, *, system: str, user: str, json_schema: dict | None = None) -> str:
+        return SPARQL
+
+
+graph = Graph()
+graph.parse("data/catcafe_demo.ttl", format="turtle")
+
+service = NLQueryService(InMemoryFusekiClient(graph), FixedLLMClient())
+print(service.ask("ステータス別の予約数は？"))
+```
+
+`catcafe.semantic.nl_query` を import するだけなら `openai` は不要です。必要になるのは `OpenAICompatibleLLMClient` を生成するときです。
+
+## モデルを選ぶときの注意
+
+- システムプロンプトは SPARQL だけを返すよう指示します。説明文を付けるモデルでは、検証エラーとリトライが増えます。
+- `json_schema` は省略可能です。`NLQueryService` は生のテキストを生成させるため、この引数を渡しません。

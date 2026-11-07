@@ -1,0 +1,102 @@
+---
+title: "エンティティ"
+description: "ドメインエンティティのフィールドとメソッドを一覧にします。"
+icon: "table-list"
+---
+
+エンティティは `catcafe.domain` にあります。設計の背景は[ドメインモデル](/concepts/domain-model)を確認してください。
+
+## User
+
+| フィールド | 型 | 既定値 |
+| --- | --- | --- |
+| `id` | `UserId` | |
+| `email` | `EmailAddress` | |
+| `display_name` | `NonEmptyStr` | |
+| `sso_provider` | `NonEmptyStr` | |
+| `sso_subject` | `NonEmptyStr` | |
+| `is_active` | `bool` | `True` |
+| `created_at` | `datetime` | |
+| `updated_at` | `datetime` | |
+
+## AuthSession
+
+| フィールド | 型 | 既定値 |
+| --- | --- | --- |
+| `id` | `AuthSessionId` | |
+| `user_id` | `UserId` | |
+| `token_hash` | `NonEmptyStr` | |
+| `created_at` | `datetime` | |
+| `expires_at` | `datetime` | |
+| `revoked_at` | `datetime \| None` | `None` |
+
+メソッド: `is_active_at(now)`、`revoke(at)`
+
+## Cat
+
+| フィールド | 型 | 既定値 |
+| --- | --- | --- |
+| `id` | `CatId` | |
+| `name` | `NonEmptyStr` | |
+| `profile_description` | `str \| None` | `None` |
+| `photo_url` | `AnyHttpUrl \| None` | `None` |
+| `is_available_for_reservation` | `bool` | `True` |
+
+## Reservation
+
+| フィールド | 型 | 既定値 |
+| --- | --- | --- |
+| `id` | `ReservationId` | |
+| `user_id` | `UserId` | |
+| `requested_cat_id` | `CatId \| None` | `None` |
+| `start_time` | `datetime` | |
+| `end_time` | `datetime` | |
+| `party_size` | `PartySize` | |
+| `status` | `ReservationStatus` | `PENDING` |
+| `notes` | `str \| None` | `None` |
+| `created_at` | `datetime` | |
+| `updated_at` | `datetime` | |
+
+`ReservationStatus` の値: `pending`、`confirmed`、`cancelled`、`completed`
+
+メソッド: `confirm()`、`cancel()`、`complete()`
+
+## MenuItem
+
+| フィールド | 型 | 既定値 |
+| --- | --- | --- |
+| `id` | `MenuItemId` | |
+| `name` | `NonEmptyStr` | |
+| `category` | `MenuItemCategory` | |
+| `price` | `Yen` | |
+| `is_available` | `bool` | `True` |
+| `description` | `str \| None` | `None` |
+
+`MenuItemCategory` の値: `snack`、`toy`
+
+## Order
+
+| フィールド | 型 | 既定値 |
+| --- | --- | --- |
+| `id` | `OrderId` | |
+| `user_id` | `UserId` | |
+| `reservation_id` | `ReservationId \| None` | `None` |
+| `status` | `OrderStatus` | `PENDING` |
+| `created_at` | `datetime` | |
+| `line_items` | `tuple[OrderLineItem, ...]` | |
+| `total_amount` | `Yen` | |
+
+`OrderStatus` の値: `pending`、`paid`、`cancelled`
+
+メソッド: `mark_paid()`、`cancel()`
+
+## OrderLineItem
+
+| フィールド | 型 | 既定値 |
+| --- | --- | --- |
+| `id` | `OrderLineItemId` | |
+| `menu_item_id` | `MenuItemId` | |
+| `quantity` | `Quantity` | |
+| `unit_price_at_purchase` | `Yen` | |
+
+プロパティ: `line_total`（`quantity * unit_price_at_purchase`）

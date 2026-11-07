@@ -1,0 +1,112 @@
+---
+title: "SPARQL レシピ"
+description: "catcafe のオントロジーで使える SPARQL の例を集めました。"
+icon: "code"
+---
+
+ここのクエリは、`prompt.py` の few-shot 例と同じものです。LLM を介さず、`HttpFusekiClient` から直接実行できます。
+
+```python
+from catcafe.semantic.rdf.http_fuseki_client import HttpFusekiClient
+
+client = HttpFusekiClient(base_url="http://localhost:3030", dataset="catcafe")
+rows = client.query(sparql)
+```
+
+<Note>
+  デモデータの予約は `completed` と `cancelled` だけ、注文は `paid` と `cancelled` だけです。[デモデータ](/guides/demo-data)を確認してください。
+</Note>
+
+## 件数と売上の集計
+
+<CodeGroup>
+```sparql 予約数（ステータス別）
+PREFIX cc: <http://catcafe.example/onto#>
+SELECT ?status (COUNT(?reservation) AS ?reservationCount)
+WHERE {
+  ?reservation a cc:Reservation ;
+               cc:status ?status .
+}
+GROUP BY ?status
+```
+
+```sparql 売上（ステータス別）
+PREFIX cc: <http://catcafe.example/onto#>
+SELECT ?status (SUM(?quantity * ?unitPrice) AS ?totalRevenue)
+WHERE {
+  ?order a cc:Order ;
+         cc:status ?status ;
+         cc:hasLineItem ?lineItem .
+  ?lineItem cc:quantity ?quantity ;
+            cc:unitPrice ?unitPrice .
+}
+GROUP BY ?status
+```
+</CodeGroup>
+
+## 省略可能な関係を扱う
+
+`cc:requestedCat` と `cc:forReservation` はない場合があります。`OPTIONAL` で囲まないと、関係を持たない行が結果から消えます。
+
+```sparql highlight={5,6}
+PREFIX cc: <http://catcafe.example/onto#>
+SELECT ?hasRequestedCat (COUNT(?reservation) AS ?reservationCount)
+WHERE {
+  ?reservation a cc:Reservation .
+  OPTIONAL { ?reservation cc:requestedCat ?cat }
+  BIND(BOUND(?cat) AS ?hasRequestedCat)
+}
+GROUP BY ?hasRequestedCat
+```
+
+## 予約と注文をまたいで集計する
+
+特定の猫を指名した利用者ごとに、予約に紐づく注文のメニューと売上を集計します。猫の名前は、データに存在するものに置き換えます。
+
+```sparql highlight={4}
+PREFIX cc: <http://catcafe.example/onto#>
+SELECT ?userName ?menuItemName (SUM(?quantity * ?unitPrice) AS ?revenue)
+WHERE {
+  ?cat a cc:Cat ; cc:name "たま" .
+  ?reservation a cc:Reservation ;
+               cc:requestedCat ?cat ;
+               cc:reservedBy ?user .
+  ?user cc:displayName ?userName .
+  ?order a cc:Order ;
+         cc:forReservation ?reservation ;
+         cc:hasLineItem ?lineItem .
+  ?lineItem cc:menuItem ?menuItem ;
+            cc:quantity ?quantity ;
+            cc:unitPrice ?unitPrice .
+  ?menuItem cc:name ?menuItemName .
+}
+GROUP BY ?userName ?menuItemName
+```
+
+## 個人情報をマスクする
+
+`cc:displayName` は「姓 名」の形式です。先頭の単語を `***` に置き換えます。
+
+```sparql
+PREFIX cc: <http://catcafe.example/onto#>
+SELECT ?maskedName WHERE {
+  ?user a cc:User ; cc:displayName ?fullName .
+  BIND(REPLACE(?fullName, "^\\S+", "***") AS ?maskedName)
+}
+```
+
+<Warning>
+  マスクはクエリの書き方による処理で、アクセス制御ではありません。元の値は引き続き Fuseki から取得できます。
+</Warning>
+
+## AI アシスタントにクエリを書かせる
+
+次のプロンプトをコピーして、お使いの AI ツールに貼り付けます。
+
+<Prompt description="catcafe のオントロジーに沿った SPARQL を生成します" actions={["copy"]}>
+catcafe の RDF データに対する SPARQL SELECT クエリを 1 つ書いてください。
+
+プレフィックスは `cc: <http://catcafe.example/onto#>` です。オントロジーは https://github.com/neko32/catcafe の `src/catcafe/semantic/nl_query/prompt.py` に従ってください。cc:requestedCat と cc:forReservation は OPTIONAL で囲んでください。ASK、CONSTRUCT、DESCRIBE、UPDATE は使わないでください。
+
+知りたいこと: ここに質問を書きます。
+</Prompt>

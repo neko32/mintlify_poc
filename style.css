@@ -1,0 +1,71 @@
+/* 日本語の本文を読みやすくするための調整 */
+#content-area {
+  line-height: 1.85;
+  line-break: strict;
+}
+
+#content-area code {
+  line-height: inherit;
+}
+
+/* Mermaid の図をブランドカラーに合わせる */
+:root {
+  --cc-diagram-fill: #fef3c7;
+  --cc-diagram-stroke: #b45309;
+  --cc-diagram-text: #292524;
+  --cc-diagram-group: #fffbeb;
+  --cc-diagram-line: #78716c;
+}
+
+html.dark {
+  --cc-diagram-fill: #44301a;
+  --cc-diagram-stroke: #fbbf24;
+  --cc-diagram-text: #fafaf9;
+  --cc-diagram-group: #1c1917;
+  --cc-diagram-line: #a8a29e;
+}
+
+svg[aria-roledescription] .node rect,
+svg[aria-roledescription] .node polygon,
+svg[aria-roledescription] .node circle,
+svg[aria-roledescription] .node path,
+svg[aria-roledescription] rect.actor,
+svg[aria-roledescription] .actor-man circle,
+svg[aria-roledescription] .labelBox,
+svg[aria-roledescription] .er.entityBox,
+svg[aria-roledescription] .state-shape {
+  fill: var(--cc-diagram-fill) !important;
+  stroke: var(--cc-diagram-stroke) !important;
+}
+
+/* 状態遷移図のラベルが右端で切れないようにする */
+svg[aria-roledescription] foreignObject {
+  overflow: visible;
+}
+
+svg[aria-roledescription] .cluster rect {
+  fill: var(--cc-diagram-group) !important;
+  stroke: var(--cc-diagram-line) !important;
+}
+
+svg[aria-roledescription] .nodeLabel,
+svg[aria-roledescription] .cluster-label,
+svg[aria-roledescription] .edgeLabel,
+svg[aria-roledescription] text.actor,
+svg[aria-roledescription] .messageText,
+svg[aria-roledescription] .loopText,
+svg[aria-roledescription] .labelText {
+  color: var(--cc-diagram-text) !important;
+  fill: var(--cc-diagram-text) !important;
+}
+
+svg[aria-roledescription] .flowchart-link,
+svg[aria-roledescription] .messageLine0,
+svg[aria-roledescription] .messageLine1,
+svg[aria-roledescription] .actor-line,
+svg[aria-roledescription] .actor-man line,
+svg[aria-roledescription] .loopLine,
+svg[aria-roledescription] .relationshipLine,
+svg[aria-roledescription] .transition {
+  stroke: var(--cc-diagram-line) !important;
+}

@@ -1,0 +1,66 @@
+---
+title: "Streamlit UI で検索する"
+description: "ブラウザから自然言語でデータを検索します。"
+icon: "browser"
+---
+
+Streamlit UI は `NLQueryService` の薄いラッパーです。入力欄は自然言語の質問だけで、構造化クエリ用のフォームはありません。
+
+## 始める前に
+
+Fuseki を起動してデータをロードし、LM Studio にモデルをロードしておきます。手順は[クイックスタート](/quickstart)にあります。
+
+## 起動する
+
+`ui` extra をインストールしてから起動します。
+
+<CodeGroup>
+```powershell PowerShell
+uv pip install -e ".[ui]"
+scripts_local\run_streamlit.ps1
+```
+
+```bash bash
+uv pip install -e ".[ui]"
+scripts_local/run_streamlit.sh
+```
+</CodeGroup>
+
+どちらのスクリプトも `.venv` の Python を使います。別の環境から起動するときは `streamlit run scripts/streamlit_app.py` を実行します。
+
+## 検索する
+
+<Steps>
+  <Step title="接続先を確認する">
+    サイドバーの設定を確認します。既定値を使う場合は変更不要です。
+  </Step>
+  <Step title="質問を入力する">
+    入力欄に質問を書きます。たとえば「猫別の予約数を多い順に教えて」と入力します。
+  </Step>
+  <Step title="検索を実行する">
+    **検索** をクリックします。結果は表で表示されます。
+  </Step>
+</Steps>
+
+## サイドバーの設定
+
+既定値は環境変数で変更できます。
+
+| 項目 | 環境変数 | 既定値 |
+| --- | --- | --- |
+| **Fuseki Base URL** | `FUSEKI_BASE_URL` | `http://localhost:3030` |
+| **Fusekiデータセット名** | `FUSEKI_DATASET` | `catcafe` |
+| **LM Studioモデル名** | `LMSTUDIO_MODEL` | `google/gemma-4-e4b` |
+| **LM Studio Base URL** | `LMSTUDIO_BASE_URL` | `http://localhost:1234/v1` |
+
+## エラーの表示
+
+例外が起きてもアプリは停止せず、画面にエラーを表示します。
+
+| 表示 | 意味 |
+| --- | --- |
+| **クエリを解決できませんでした** | リトライしても有効な SPARQL を得られませんでした。 |
+| **エラーが発生しました** | Fuseki や LM Studio が起動していないなど、その他の問題です。 |
+| **該当するデータがありませんでした** | クエリは成功しましたが、結果は 0 件でした。 |
+
+解決方法は[トラブルシューティング](/guides/troubleshooting)を確認してください。

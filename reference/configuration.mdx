@@ -1,0 +1,24 @@
+---
+title: "環境変数"
+description: "catcafe が読み取る環境変数を一覧にします。"
+icon: "sliders"
+---
+
+| 環境変数 | 既定値 | 読み取るもの |
+| --- | --- | --- |
+| `FUSEKI_BASE_URL` | `http://localhost:3030` | Streamlit UI、MCP サーバー |
+| `FUSEKI_DATASET` | `catcafe` | Streamlit UI、MCP サーバー |
+| `LMSTUDIO_MODEL` | `google/gemma-4-e4b` | Streamlit UI、MCP サーバー |
+| `LMSTUDIO_BASE_URL` | `http://localhost:1234/v1` | Streamlit UI、MCP サーバー |
+| `FUSEKI_ADMIN_PASSWORD` | `changeme` | `docker-compose.yml` |
+
+<Warning>
+  `FUSEKI_ADMIN_PASSWORD` は `docker-compose.yml` だけが読みます。`export_rdf.py` には `--fuseki-admin-password` で渡します。既定値の `changeme` はローカル開発専用です。
+</Warning>
+
+## ポート
+
+| サービス | ポート |
+| --- | --- |
+| Fuseki | `3030` |
+| LM Studio | `1234` |

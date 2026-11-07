@@ -1,0 +1,41 @@
+---
+title: "セキュリティの前提"
+description: "catcafe の防御策と、公開環境で使う前に解決が必要な制約を説明します。"
+icon: "shield-halved"
+---
+
+catcafe はローカルでの検証を前提にしています。
+
+<Danger>
+  このままインターネットに公開しないでください。認可の仕組みがまだなく、質問できる人は Fuseki 内の個人情報を取得できます。
+</Danger>
+
+## 実装済みの防御
+
+| 対象 | 内容 |
+| --- | --- |
+| SSO トークン | `AuthSession` は `token_hash` だけを保存します。 |
+| RDF への投影 | `AuthSession` と `sso_subject` は Fuseki に入りません。 |
+| LLM が生成したクエリ | `validate_select_query()` が SELECT 以外を拒否します。 |
+| ドメインの不変条件 | 変更のたびに再検証します。 |
+| MCP のツール | 公開するのは自然言語検索の 1 つだけです。 |
+
+## 把握しておくべき制約
+
+<AccordionGroup>
+  <Accordion title="認可の仕組みがない" icon="user-lock" defaultOpen>
+    認可ポリシーの適用ポイントは Phase 3 の予定で、まだありません。質問できる人は、ユーザーの `cc:displayName` と `cc:email` も取得できます。
+  </Accordion>
+  <Accordion title="Fuseki のポートがホストに公開される" icon="network-wired">
+    `docker-compose.yml` は `3030:3030` でポートを公開します。`HttpFusekiClient` は認証情報を送らずにクエリを実行します。信頼できないネットワークでは、ポートへのアクセスを制限してください。
+  </Accordion>
+  <Accordion title="管理者パスワードの既定値が changeme である" icon="key">
+    既定値はローカル開発専用です。共有環境では `FUSEKI_ADMIN_PASSWORD` を設定してください。`--fuseki-admin-password` で渡すと、コマンド履歴に残る場合があります。
+  </Accordion>
+  <Accordion title="重いクエリを制限していない" icon="gauge-high">
+    `validate_select_query()` は、クエリの種類だけを確認します。`LIMIT` の強制やコストの制限はありません。`HttpFusekiClient` のタイムアウトは既定で 30 秒です。
+  </Accordion>
+  <Accordion title="マスクはアクセス制御ではない" icon="mask">
+    `REPLACE` を使うマスキングは、クエリの書き方による処理です。別の質問をすれば、元の値を取得できます。
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,111 @@
+---
+title: "catcafe.semantic.nl_query"
+sidebarTitle: "nl_query"
+description: "自然言語検索の Python API です。"
+icon: "wand-magic-sparkles"
+---
+
+`openai` はオプションの依存です。このパッケージの import には不要で、`OpenAICompatibleLLMClient` の生成時に必要になります。
+
+## NLQueryService
+
+質問を SPARQL に変換し、検証して実行します。
+
+```python
+NLQueryService(
+    fuseki_client: FusekiClient,
+    llm_client: LLMClient,
+)
+```
+
+### ask
+
+```python
+ask(question: str) -> list[dict[str, Any]]
+```
+
+<ResponseField name="question" type="str" required>
+  自然言語の質問です。
+</ResponseField>
+
+<ResponseField name="戻り値" type="list[dict[str, Any]]">
+  クエリの実行結果の行です。キーは SPARQL の変数名です。LLM による要約はしません。
+</ResponseField>
+
+<ResponseField name="NLQueryError" type="例外">
+  リトライ後も有効な結果を得られなかったときに送出します。
+
+  <Expandable title="属性">
+    <ResponseField name="question" type="str">
+      元の質問です。
+    </ResponseField>
+    <ResponseField name="last_error" type="str">
+      最後のエラーメッセージです。
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```python 例
+from catcafe.semantic.nl_query import (
+    NLQueryService,
+    OpenAICompatibleLLMClient,
+)
+from catcafe.semantic.rdf.http_fuseki_client import (
+    HttpFusekiClient,
+)
+
+fuseki = HttpFusekiClient(
+    base_url="http://localhost:3030",
+    dataset="catcafe",
+)
+llm = OpenAICompatibleLLMClient(
+    model="google/gemma-4-e4b",
+)
+service = NLQueryService(fuseki, llm)
+
+rows = service.ask("ステータス別の予約数は？")
+```
+</RequestExample>
+
+<ResponseExample>
+```python 戻り値の形（値はイメージ）
+[
+    {"status": "completed", "c": 100},
+    {"status": "cancelled", "c": 20},
+]
+```
+</ResponseExample>
+
+## LLMClient
+
+差し替え可能な LLM の Protocol です。
+
+```python
+class LLMClient(Protocol):
+    def complete(
+        self,
+        *,
+        system: str,
+        user: str,
+        json_schema: dict[str, Any] | None = None,
+    ) -> str: ...
+```
+
+## OpenAICompatibleLLMClient
+
+OpenAI 互換の Chat Completions エンドポイントと通信します。
+
+<ResponseField name="model" type="str" required>
+  モデル名です。LM Studio ではロード済みのモデル名を指定します。
+</ResponseField>
+
+<ResponseField name="base_url" type="str" default="http://localhost:1234/v1">
+  エンドポイントのベース URL です。
+</ResponseField>
+
+<ResponseField name="api_key" type="str" default="lm-studio">
+  API キーです。LM Studio はこの値の内容を無視します。
+</ResponseField>
+
+応答の本文が空のときは `ValueError` を送出します。`NLQueryService` はこの例外をリトライしません。

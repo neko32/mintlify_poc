@@ -1,0 +1,57 @@
+---
+title: "リポジトリ"
+description: "集約ごとの Repository Protocol と、その実装を一覧にします。"
+icon: "layer-group"
+---
+
+Protocol は `catcafe.persistence.repositories.protocols` にあります。実装はフェイクと SQLAlchemy の 2 種類です。
+
+| Protocol | フェイク（`fakes`） | SQLAlchemy（`sqlalchemy_repositories`） |
+| --- | --- | --- |
+| `UserRepository` | `FakeUserRepository` | `SqlAlchemyUserRepository` |
+| `AuthSessionRepository` | `FakeAuthSessionRepository` | `SqlAlchemyAuthSessionRepository` |
+| `CatRepository` | `FakeCatRepository` | `SqlAlchemyCatRepository` |
+| `ReservationRepository` | `FakeReservationRepository` | `SqlAlchemyReservationRepository` |
+| `MenuItemRepository` | `FakeMenuItemRepository` | `SqlAlchemyMenuItemRepository` |
+| `OrderRepository` | `FakeOrderRepository` | `SqlAlchemyOrderRepository` |
+
+## メソッド
+
+すべての Protocol に `save(entity)` と `get_by_id(id)` があります。`get_by_id` は、見つからないときに `None` を返します。
+
+| Protocol | 追加のメソッド |
+| --- | --- |
+| `UserRepository` | `get_by_sso_identity(provider, subject)`、`list_all()` |
+| `AuthSessionRepository` | `list_by_user(user_id)` |
+| `CatRepository` | `list_available()`、`list_all()` |
+| `ReservationRepository` | `list_by_user(user_id)`、`list_all()` |
+| `MenuItemRepository` | `list_available()`、`list_all()` |
+| `OrderRepository` | `list_by_user(user_id)`、`list_all()` |
+
+## 実装の使い分け
+
+<Tabs>
+  <Tab title="フェイク">
+    dict を使うインメモリ実装です。DB なしでユニットテストを実行できます。
+  </Tab>
+  <Tab title="SQLAlchemy">
+    SQLAlchemy 2.x の実装です。`save()` は `Session.merge()` で upsert します。
+
+    ```python
+    from catcafe.persistence.db import (
+        create_all_tables,
+        create_sqlite_engine,
+        make_session_factory,
+    )
+    from catcafe.persistence.repositories.sqlalchemy_repositories import (
+        SqlAlchemyCatRepository,
+    )
+
+    engine = create_sqlite_engine("sqlite:///data/catcafe_demo.db")
+    create_all_tables(engine)
+
+    with make_session_factory(engine)() as session:
+        cats = SqlAlchemyCatRepository(session).list_available()
+    ```
+  </Tab>
+</Tabs>

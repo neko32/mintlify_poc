@@ -1,0 +1,35 @@
+---
+title: "現状とロードマップ"
+description: "実装済みの範囲と、まだ実装していない範囲を説明します。"
+icon: "map"
+---
+
+catcafe は POC です。現在あるのはデータ基盤と検索の経路で、利用者向けの予約サイトはまだありません。
+
+## 実装状況
+
+| 項目 | 状況 |
+| --- | --- |
+| ドメインモデル | <Badge color="green" size="sm">実装済み</Badge> |
+| 永続化層（SQLite） | <Badge color="green" size="sm">実装済み</Badge> |
+| RDF への投影と SPARQL | <Badge color="green" size="sm">実装済み</Badge> |
+| 自然言語検索 | <Badge color="green" size="sm">実装済み</Badge> |
+| Streamlit UI、MCP サーバー | <Badge color="green" size="sm">実装済み</Badge> |
+| 認可ポリシーの適用ポイント | <Badge color="orange" size="sm">Phase 3 の予定</Badge> |
+| DB マイグレーション（Alembic） | <Badge color="gray" size="sm">未導入</Badge> |
+
+## 機能一覧にある機能
+
+業務仕様の機能一覧には次の 4 つがあります。ドメインモデルは用意していますが、画面は実装していません。SSO ログインの仕様は TBD のままです。
+
+- SSO ログイン
+- 予約ページ
+- おやつ、おもちゃの購入ページ
+- ログアウト
+
+## 設計上の前提
+
+- 通貨は日本円のみで、小数は扱いません。
+- ドメイン層の日時は常に UTC です。
+- スタッフ管理と決済ゲートウェイ連携はスコープ外です。
+- Fuseki は CI に組み込まず、ローカル専用のインフラとして扱います。

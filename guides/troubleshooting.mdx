@@ -1,0 +1,66 @@
+---
+title: "トラブルシューティング"
+description: "セットアップや検索でよくある問題の原因と対処を説明します。"
+icon: "wrench"
+---
+
+## 検索
+
+<AccordionGroup>
+  <Accordion title="「エラーが発生しました」と表示される">
+    Fuseki か LM Studio に接続できていない可能性があります。
+
+    1. `docker compose ps` で Fuseki が起動しているか確認します。
+    2. LM Studio でサーバーが起動し、モデルがロードされているか確認します。
+    3. サイドバーの URL とモデル名を確認します。
+  </Accordion>
+  <Accordion title="「クエリを解決できませんでした」と表示される">
+    LLM が 2 回とも有効な SPARQL を生成できませんでした。質問を短くして、対象を具体的に書き直します。解決しないときは、より大きなモデルを試します。
+  </Accordion>
+  <Accordion title="結果が 0 件になる">
+    データが未ロードの可能性があります。`python scripts/export_rdf.py --load` を実行します。
+
+    `confirmed` の予約を尋ねている場合、0 件は正常です。[デモデータ](/guides/demo-data)に `pending` と `confirmed` の予約はありません。
+  </Accordion>
+  <Accordion title="省略可能な関係を持つ行が結果から消える">
+    `cc:requestedCat` や `cc:forReservation` が `OPTIONAL` で囲まれていない可能性があります。[SPARQL レシピ](/guides/sparql-recipes)の例を参考にします。
+  </Accordion>
+</AccordionGroup>
+
+## Fuseki
+
+<AccordionGroup>
+  <Accordion title="--load が HTTP 401 で失敗する">
+    管理者パスワードが一致していない可能性があります。`export_rdf.py` の既定値は `changeme` で、環境変数 `FUSEKI_ADMIN_PASSWORD` を読みません。
+
+    ```bash
+    python scripts/export_rdf.py --load --fuseki-admin-password <パスワード>
+    ```
+  </Accordion>
+  <Accordion title="--load で httpx の ImportError が出る">
+    `httpx` がインストールされていません。`ui`、`mcp`、`nlquery` のいずれかの extra をインストールします。
+  </Accordion>
+  <Accordion title="メモリ上の結果と Fuseki の結果が異なる">
+    `InMemoryFusekiClient` が使う rdflib は、射影したすべての変数が未束縛の行を落とします。`OPTIONAL` の外側の変数も射影に含めます。
+  </Accordion>
+</AccordionGroup>
+
+## MCP
+
+<AccordionGroup>
+  <Accordion title="Claude Desktop にツールが表示されない">
+    Claude Desktop を完全に終了してから再起動します。その後、`%APPDATA%\Claude\logs\mcp-server-catcafe-nlquery.log` を確認します。
+
+    `command` が venv の `python.exe` を指しているかも確認します。
+  </Accordion>
+  <Accordion title="ModuleNotFoundError: mcp が出る">
+    `uv pip install -e ".[mcp]"` を実行します。`mcp` は 2.0 以上が必要です。
+  </Accordion>
+  <Accordion title="MCP の通信が壊れる">
+    サーバーのコードで `print()` を呼んでいないか確認します。標準出力は MCP の通信路です。
+  </Accordion>
+</AccordionGroup>
+
+## それでも解決しないときは
+
+[GitHub のリポジトリ](https://github.com/neko32/catcafe)でコードと設計ドキュメントを確認してください。

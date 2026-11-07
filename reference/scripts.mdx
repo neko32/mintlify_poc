@@ -1,0 +1,70 @@
+---
+title: "スクリプト"
+description: "scripts/ と scripts_local/ のコマンドとオプションを一覧にします。"
+icon: "terminal"
+---
+
+## scripts/seed_demo_data.py
+
+SQLite にデモデータを生成します。`seed` extra が必要です。
+
+| オプション | 既定値 | 説明 |
+| --- | --- | --- |
+| `--db-path` | `data/catcafe_demo.db` | 出力先です。既存のファイルは削除します。 |
+| `--seed` | `42` | 乱数のシードです。 |
+| `--cats` | `30` | 猫の数です。 |
+| `--menu-items` | `50` | メニューの数です。 |
+| `--users` | `100` | ユーザーの数です。 |
+| `--days` | `365` | 生成する日数です。 |
+
+## scripts/export_rdf.py
+
+SQLite のデータを Turtle に書き出します。`--load` を付けると Fuseki にもロードします。
+
+| オプション | 既定値 | 説明 |
+| --- | --- | --- |
+| `--db-path` | `data/catcafe_demo.db` | 入力の SQLite ファイルです。 |
+| `--ttl-path` | `data/catcafe_demo.ttl` | 出力の Turtle ファイルです。 |
+| `--load` | なし | Fuseki にロードします。 |
+| `--fuseki-base-url` | `http://localhost:3030` | Fuseki の URL です。 |
+| `--fuseki-dataset` | `catcafe` | データセット名です。なければ作成します。 |
+| `--fuseki-admin-password` | `changeme` | 管理者パスワードです。 |
+
+## scripts/streamlit_app.py
+
+Streamlit UI です。`ui` extra が必要です。[Streamlit UI で検索する](/guides/streamlit)を確認してください。
+
+```bash
+streamlit run scripts/streamlit_app.py
+```
+
+## scripts/mcp_server.py
+
+stdio で動く MCP サーバーです。`mcp` extra が必要です。[Claude Desktop から使う](/guides/mcp-claude-desktop)を確認してください。
+
+| ツール | 説明 |
+| --- | --- |
+| `ask_cat_cafe(question: str) -> list[dict]` | 自然言語で予約や注文について質問します。 |
+
+## scripts_local/
+
+Windows 用の `.ps1` と、Linux / macOS 用の `.sh` があります。
+
+| スクリプト | 説明 |
+| --- | --- |
+| `bootstrap` | `dev` と `seed` の extra をインストールし、Ruff とカバレッジ付きの pytest を実行します。 |
+| `run_streamlit` | `.venv` の Python で Streamlit UI を起動します。 |
+| `start_fuseki` | `docker compose up -d fuseki` を実行します。 |
+| `stop_fuseki` | `docker compose down` を実行します。 |
+
+## extras
+
+`uv pip install -e ".[extra]"` の形式でインストールします。
+
+| extra | パッケージ |
+| --- | --- |
+| `dev` | `pytest`、`pytest-cov`、`ruff` |
+| `seed` | `faker` |
+| `nlquery` | `openai`、`httpx` |
+| `ui` | `streamlit`、`openai`、`httpx` |
+| `mcp` | `mcp`、`openai`、`httpx` |

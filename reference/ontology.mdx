@@ -1,0 +1,68 @@
+---
+title: "オントロジー"
+description: "RDF のクラスとプロパティを一覧にします。"
+icon: "circle-nodes"
+---
+
+```sparql
+PREFIX cc: <http://catcafe.example/onto#>
+```
+
+リソース URI は `http://catcafe.example/resource/<kind>/<uuid>` の形式です。`kind` は `cat`、`user`、`menu-item`、`reservation`、`order`、`order-line-item` のいずれかです。
+
+すべてのクラスに `cc:id`（文字列の UUID）があります。
+
+## cc:Cat
+
+| プロパティ | 値 |
+| --- | --- |
+| `cc:name` | 文字列 |
+| `cc:isAvailableForReservation` | 真偽値 |
+
+## cc:User
+
+| プロパティ | 値 |
+| --- | --- |
+| `cc:displayName` | 文字列（「姓 名」の形式） |
+| `cc:email` | 文字列 |
+| `cc:ssoProvider` | 文字列 |
+| `cc:isActive` | 真偽値 |
+
+## cc:MenuItem
+
+| プロパティ | 値 |
+| --- | --- |
+| `cc:name` | 文字列 |
+| `cc:category` | `"snack"` \| `"toy"` |
+| `cc:price` | 整数（円） |
+| `cc:isAvailable` | 真偽値 |
+
+## cc:Reservation
+
+| プロパティ | 値 |
+| --- | --- |
+| `cc:status` | `"pending"` \| `"confirmed"` \| `"cancelled"` \| `"completed"` |
+| `cc:partySize` | 整数 |
+| `cc:startTime` | 日時 |
+| `cc:endTime` | 日時 |
+| `cc:reservedBy` | `cc:User` |
+| `cc:requestedCat` | `cc:Cat`（省略可） |
+
+## cc:Order
+
+| プロパティ | 値 |
+| --- | --- |
+| `cc:status` | `"pending"` \| `"paid"` \| `"cancelled"` |
+| `cc:createdAt` | 日時 |
+| `cc:totalAmount` | 整数（円） |
+| `cc:orderedBy` | `cc:User` |
+| `cc:forReservation` | `cc:Reservation`（省略可） |
+| `cc:hasLineItem` | `cc:OrderLineItem`（1 件以上） |
+
+## cc:OrderLineItem
+
+| プロパティ | 値 |
+| --- | --- |
+| `cc:menuItem` | `cc:MenuItem` |
+| `cc:quantity` | 整数 |
+| `cc:unitPrice` | 整数（円） |
